@@ -1,0 +1,25 @@
+AION2_VIE.exe
+
+# pipeline đồng bộ gói ngôn ngữ: không đưa bảng khóa và dữ liệu trung gian vào repo
+tools/langpack/keys.json
+tools/langpack/pak-keys.json
+tools/langpack/official*.dat
+tools/langpack/*.tmp.dat
+tools/langpack/reports/
+tools/langpack/__pycache__/
+__pycache__/
+*.pyc
+*.unpacked.bin
+regions/
+regions*/
+# Công cụ phân tích ngược / bộ nhớ (không đưa vào repo, chỉ giữ ở máy local)
+tools/re/
+tools/langpack/keyfind.py
+tools/langpack/crack_key_offline.py
+
+# Kiểm thử và file phát sinh của bản Việt, chỉ giữ ở máy local.
+tests/
+langpack/*.pak
+*.stage-*
+release-body.md
+AION2_VIE.exe.sha256

@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stamp version from tag
+        shell: pwsh
+        run: |
+          $nums = @([regex]::Matches("${{ github.ref_name }}", '\d+') | ForEach-Object { $_.Value })
+          while ($nums.Count -lt 4) { $nums += '0' }
+          $ver = ($nums[0..3] -join '.')
+          $path = 'AION2_VIE.cs'
+          $text = Get-Content $path -Raw
+          $text = $text -replace 'AssemblyVersion\("[\d\.]+"\)', "AssemblyVersion(`"$ver`")"
+          $text = $text -replace 'AssemblyFileVersion\("[\d\.]+"\)', "AssemblyFileVersion(`"$ver`")"
+          Set-Content -Path $path -Value $text -NoNewline -Encoding utf8
+          Write-Host "Assembly version stamped as $ver"
+
+      - name: Build
+        shell: cmd
+        run: build.bat
+
+      # Tùy chọn: thêm SIGNING_PFX_BASE64 / SIGNING_PFX_PASSWORD vào repo secrets để tự động ký số,
+      # nếu chưa thiết lập thì bỏ qua (không làm build thất bại). Ký số giúp xử lý cả nhận diện nhầm của antivirus và cảnh báo SmartScreen.
+      - name: Sign executable (optional)
+        shell: pwsh
+        env:
+          SIGNING_PFX_BASE64: ${{ secrets.SIGNING_PFX_BASE64 }}
+          SIGNING_PFX_PASSWORD: ${{ secrets.SIGNING_PFX_PASSWORD }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:SIGNING_PFX_BASE64)) {
+            Write-Host "No signing secrets configured - skipping code signing."
+            exit 0
+          }
+          $pfx = Join-Path $env:RUNNER_TEMP 'signing.pfx'
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:SIGNING_PFX_BASE64))
+          $signtool = Get-ChildItem "${env:ProgramFiles(x86)}\Windows Kits\10\bin\*\x64\signtool.exe" |
+            Sort-Object FullName -Descending | Select-Object -First 1
+          if (-not $signtool) { throw "signtool.exe not found on this runner" }
+          & $signtool.FullName sign /fd SHA256 /f $pfx /p $env:SIGNING_PFX_PASSWORD /tr http://timestamp.digicert.com /td SHA256 AION2_VIE.exe
+          if ($LASTEXITCODE -ne 0) { throw "signtool failed with $LASTEXITCODE" }
+          Remove-Item $pfx -Force
+          Write-Host "Signed AION2_VIE.exe"
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash AION2_VIE.exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  AION2_VIE.exe" | Set-Content AION2_VIE.exe.sha256 -Encoding ascii
+          "AION2_VIE.exe SHA-256: $hash" >> $env:GITHUB_STEP_SUMMARY
+
+      # Trang Release cần ghi rõ có ký số hay không: nếu chưa ký, người dùng sẽ thấy cảnh báo SmartScreen
+      - name: Build release notes
+        shell: pwsh
+        run: |
+          $body = Get-Content .github/release-notes.md -Raw
+          $sig = (Get-AuthenticodeSignature AION2_VIE.exe)
+          if ($sig.Status -eq 'Valid') {
+            $note = "> ✅ Phiên bản này đã ký số: $($sig.SignerCertificate.Subject)"
+          } else {
+            $note = "> ⚠️ Phiên bản này chưa ký số: lần chạy đầu, SmartScreen sẽ hiển thị 「ứng dụng chưa được nhận diện」, bấm 「More info → Run anyway」; nếu không muốn thông báo xuất hiện lại, có thể chạy trước ``Unblock-File .\AION2_VIE.exe``."
+          }
+          Set-Content -Path release-body.md -Value ($body.TrimEnd() + "`n`n" + $note + "`n") -Encoding utf8
+          Write-Host "Trạng thái Authenticode: $($sig.Status)"
+
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" AION2_VIE.exe AION2_VIE.exe.sha256 --clobber
+            gh release edit "$GITHUB_REF_NAME" --notes-file release-body.md
+          else
+            gh release create "$GITHUB_REF_NAME" AION2_VIE.exe AION2_VIE.exe.sha256 \
+              --title "AION2 Gói Ngôn Ngữ Tiếng Việt $GITHUB_REF_NAME" \
+              --notes-file release-body.md
+          fi
