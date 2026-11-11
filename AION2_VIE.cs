@@ -22,12 +22,12 @@ using Microsoft.Win32;
 [assembly: AssemblyProduct("AION2_VIE · Gói Ngôn Ngữ Tiếng Việt")]
 [assembly: AssemblyCompany("Steam-AION2-Vietnamese")]
 [assembly: AssemblyCopyright("Copyright © Monohitoxx")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]
 
 static class Patch
 {
-    public const string PackVersion = "Đồng bộ phiên bản ngày 04/11";
+    public const string PackVersion = "Đồng bộ phiên bản ngày 11/11";
     const string SteamAppId = "3393110";
     const string EnPakDir = @"Aion2\Content\Paks\L10N\Text\en-US";
     const string EnPakName = "pakchunk502000-Windows_0_P";

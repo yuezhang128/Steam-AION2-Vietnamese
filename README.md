@@ -41,7 +41,7 @@ Khi tích chọn “Cài kèm font tiếng Việt”, công cụ sẽ cài font 
 
 ## Nội dung gói ngôn ngữ
 
-- Phiên bản hiện tại đồng bộ với bản game ngày **04/11**, gồm 153.419 mục văn bản.
+- Phiên bản hiện tại đồng bộ với bản game ngày **11/11**, gồm 153.008 mục văn bản.
 - Bổ sung bản dịch cho thành tựu, vật phẩm, danh hiệu và giao diện chưa được dịch.
 - Các phần chủ ý giữ nguyên tiếng Anh: tên máy chủ, các chữ viết tắt thông dụng như `PVP` / `DPS`, tên công nghệ đồ họa.
 

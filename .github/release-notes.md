@@ -1,6 +1,6 @@
-Gói ngôn ngữ tiếng Việt cho AION2 Global (Steam / PURPLE), đồng bộ với bản game ngày **04/11**, gồm 153.419 mục văn bản.
+Gói ngôn ngữ tiếng Việt cho AION2 Global (Steam / PURPLE), đồng bộ với bản game ngày **11/11**, gồm 153.008 mục văn bản.
 
-Bổ sung bản dịch cho 125 mục mới và rà soát 57 mục thay đổi trong bản cập nhật ngày 04/11.
+Bổ sung bản dịch cho 89 mục mới, rà soát 65 mục thay đổi và đồng bộ 1.073 mục có nguồn trùng khớp. Nội dung mới chưa dịch giữ tiếng Anh.
 
 ## Cách sử dụng
 
